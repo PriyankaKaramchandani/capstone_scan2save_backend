@@ -23,6 +23,10 @@ load_dotenv()
 firebase_private_key_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 secret_key = os.getenv('SECRET_KEY')
 
+#Debug
+print(f"Firebase private key path: {firebase_private_key_path}")
+print(f"Secret key: {secret_key}")
+
 
 def create_app(test_config=None):
     app = Flask(__name__)

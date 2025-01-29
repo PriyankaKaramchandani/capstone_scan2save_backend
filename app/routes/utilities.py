@@ -151,3 +151,52 @@ def retrieve_user_data(user_id):
         medical_profiles_docs = medical_profile_ref.stream()
         medical_profiles = [doc.to_dict() for doc in medical_profiles_docs]
         return user_data, medical_profiles
+    
+
+# Helper function to update user profile
+def update_user_profile(user_id, updated_fields):
+    if not updated_fields:
+        logging.info("No user updates to apply.")
+        return True, None  # No updates to apply
+
+    try:
+        # Retrieve the user document from Firestore
+        db = firestore.client()
+        user_ref = db.collection('users').document(user_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            logging.warning(f"User document with ID {user_id} does not exist.")
+            return False, "User not found"
+
+        # Update the user profile fields
+        user_ref.update(updated_fields)
+        logging.info(f"User profile updated for user ID {user_id}.")
+        return True, None
+    except Exception as e:
+        logging.error(f"Error updating user profile for user ID {user_id}: {e}", exc_info=True)
+        return False, str(e)
+
+def update_user_medical_profile(user_id, updated_fields):
+    if not updated_fields:
+        logging.info("No medical updates to apply.")
+        return True, None  # No updates to apply
+
+    try:
+        # Retrieve the medical profile document from Firestore
+        db = firestore.client()
+        medical_profile_ref = db.collection('medical_profiles').where('user_id', '==', user_id)
+        medical_profiles_docs = medical_profile_ref.stream()
+
+        if not medical_profiles_docs:
+            logging.warning(f"No medical profile documents found for user ID {user_id}.")
+            return False, "Medical profile not found"
+
+        # Update the medical profile fields
+        for doc in medical_profiles_docs:
+            doc.reference.update(updated_fields)
+        logging.info(f"Medical profile updated for user ID {user_id}.")
+        return True, None
+    except Exception as e:
+        logging.error(f"Error updating medical profile for user ID {user_id}: {e}", exc_info=True)
+        return False, str(e)

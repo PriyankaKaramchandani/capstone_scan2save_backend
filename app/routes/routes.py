@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from .utilities import validate_profile_completeness, generate_uuid, store_user_profile, store_medical_profile, generate_qr_code, retrieve_user_data
+from .utilities import update_user_profile, update_user_medical_profile
 from firebase_admin import firestore
 import logging
 
@@ -65,3 +66,37 @@ def get_user_profile(user_id):
         logging.error(f"Error retrieving user profile: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+
+# Route to update user or medical profile for existing users
+@bp.patch("/user/<user_id>/update")
+def update_user_or_medical_profile(user_id):
+    try:
+        data = request.get_json()
+        user_updates = data.get("user_updates", {})
+        medical_updates = data.get("medical_updates", {})
+
+        # Update user profile if updates are provided
+        user_success = True
+        user_error = None
+        if user_updates:
+            user_success, user_error = update_user_profile(user_id, user_updates)
+            if not user_success:
+                return jsonify({"error": f"User update failed: {user_error}"}), 404
+
+        # Update medical profile if updates are provided
+        medical_success = True
+        medical_error = None
+        if medical_updates:
+            medical_success, medical_error = update_user_medical_profile(user_id, medical_updates)
+            if not medical_success:
+                return jsonify({"error": f"Medical profile update failed: {medical_error}"}), 404
+
+        # If both updates are successful
+        if user_success and medical_success:
+            return jsonify({"message": "User and medical profile updated successfully"}), 200
+        else:
+            return jsonify({"error": "Update failed"}), 400
+
+    except Exception as e:
+        logging.error(f"Error updating user or medical profile: {e}")
+        return jsonify({"error": "Internal server error"}), 500
