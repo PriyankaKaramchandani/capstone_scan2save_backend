@@ -8,7 +8,7 @@ from flask import request
 
 # Validate profile being complete
 def validate_profile_completeness(data, valid_roles, required_steps):
-    required_fields = ['first_name', 'last_name', 'date_of_birth', 'completed_steps', 'role']
+    required_fields = ['first_name', 'last_name', 'date_of_birth', 'role']
 
     for field in required_fields:
         if field not in data or not data[field]:
@@ -18,9 +18,15 @@ def validate_profile_completeness(data, valid_roles, required_steps):
         if role not in valid_roles:
             return False, f"Invalid role: {role}. Valid roles are: {', '.join(valid_roles)}"
 
-        completed_steps = data.get('completed_steps')
-        if not completed_steps or not all(step in completed_steps for step in required_steps):
-            return False, f"Incomplete steps. The following steps are required: {', '.join(required_steps)}"
+        #  # Check if all required steps are completed
+        # for step in required_steps:
+        #     if step not in data.get('completed_steps', []):
+        #         return False, f"Missing required step: {step}"
+
+        # return True, "Profile is complete"
+        # completed_steps = data.get('completed_steps')
+        # if not completed_steps or not all(step in completed_steps for step in required_steps):
+        #     return False, f"Incomplete steps. The following steps are required: {', '.join(required_steps)}"
     
         # Check for duplicates in Firestore
         db = firestore.client()
@@ -39,28 +45,6 @@ def validate_profile_completeness(data, valid_roles, required_steps):
 def generate_uuid():
     return str(uuid4())
 
-from flask import Blueprint, request, jsonify
-from .utilities import validate_profile_completeness, generate_uuid
-from firebase_admin import firestore
-
-bp = Blueprint('routes', __name__, url_prefix="/api")
-
-# Define routes for new_user
-@bp.post("/new_user")
-def create_a_new_profile():
-    data = request.get_json()
-
-    valid_roles = ['new_user', 'returning_user', 'medical_professional']
-    required_steps = ['first_name', 'last_name', 'date_of_birth']
-
-    is_valid, message = validate_profile_completeness(data, valid_roles, required_steps)
-
-    if not is_valid:
-        return jsonify({"error": message}), 400
-
-    # Generate a unique UUID
-    user_id = generate_uuid()
-    profile_id = generate_uuid()
 
 # Store the user profile data in Firestore
 def store_user_profile(user_id, data, qr_code_base64):
@@ -71,14 +55,14 @@ def store_user_profile(user_id, data, qr_code_base64):
         'last_name': data['last_name'],
         'date_of_birth': data['date_of_birth'],
         'gender': data.get('gender', ''),
-        'phone_number': data.get('phone_number', ''),
+        'phoneNumber': data.get('phoneNumber', ''),
         'role': data['role'],
         'emergency_contact': {
             'first_name': data.get('emergency_contact', {}).get('first_name', ''),
             'last_name': data.get('emergency_contact', {}).get('last_name', ''),
             'phone_number': data.get('emergency_contact', {}).get('phone_number', ''),
         },
-        'completed_steps': data['completed_steps'],
+        # 'completed_steps': data['completed_steps'],
         'qr_code_base64': qr_code_base64
     }
     db.collection('users').document(user_id).set(user_data)

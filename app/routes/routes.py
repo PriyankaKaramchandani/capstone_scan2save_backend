@@ -51,6 +51,8 @@ def get_user_profile(user_id):
         user_data, medical_profiles = retrieve_user_data(user_id)
         if user_data is None:
             return jsonify({"error": "User not found"}), 404
+        
+        logging.debug(f"User data retrieved: {user_data}")
 
         response = {
             "user_data": user_data,
@@ -100,3 +102,38 @@ def update_user_or_medical_profile(user_id):
     except Exception as e:
         logging.error(f"Error updating user or medical profile: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
+# @bp.post("/new_user")
+# def create_a_new_profile():
+#     try:
+#         data = request.get_json()
+#         logging.info(f"Received data for new user: {data}")
+
+#         valid_roles = ['new_user', 'returning_user', 'medical_professional']
+#         required_steps = ['firstName', 'lastName', 'dateOfBirth']
+
+#         is_valid, message = validate_profile_completeness(data, valid_roles, required_steps)
+
+#         if not is_valid:
+#             return jsonify({"error": message}), 400
+
+#         # Generate a unique UUID
+#         user_id = generate_uuid()
+#         profile_id = generate_uuid()
+
+#         # Generate a unique URL using the UUID
+#         unique_url = f"https://scan2save.com/user/{user_id}"
+
+#         # Generate and encode QR code
+#         qr_code_base64 = generate_qr_code(unique_url)
+
+#         # Store the user profile data in Firestore
+#         store_user_profile(user_id, data, qr_code_base64)
+
+#         # Store the medical profile data
+#         store_medical_profile(profile_id, user_id, data)
+
+#         return jsonify({"message": "User profile created successfully"}), 201
+#     except Exception as e:
+#         logging.error(f"Error creating new user profile: {e}", exc_info=True)
+#         return jsonify({"error": "Internal server error"}), 500
