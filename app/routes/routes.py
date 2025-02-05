@@ -9,40 +9,44 @@ bp = Blueprint('routes', __name__, url_prefix="/api")
 # Route for new_user to create medical_profile
 @bp.post("/new_user")
 def create_a_new_profile():
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    valid_roles = ['new_user', 'returning_user', 'medical_professional']
-    required_steps = ['first_name', 'last_name', 'date_of_birth']
+        valid_roles = ['new_user', 'returning_user', 'medical_professional']
+        required_steps = ['first_name', 'last_name', 'date_of_birth']
 
-    is_valid, message = validate_profile_completeness(data, valid_roles, required_steps)
+        is_valid, message = validate_profile_completeness(data, valid_roles, required_steps)
 
-    if not is_valid:
-        return jsonify({"error": message}), 400
+        if not is_valid:
+            return jsonify({"error": message}), 400
 
-    # Generate a unique UUID
-    user_id = generate_uuid()
-    profile_id = generate_uuid()
+        # Generate a unique UUID
+        user_id = generate_uuid()
+        profile_id = generate_uuid()
 
-    # Generate a unique URL using the UUID
-    unique_url = f"https://scan2save.com/user/{user_id}"
+        # Generate a unique URL using the UUID
+        unique_url = f"https://scan2save.com/user/{user_id}"
 
-    # Generate and encode QR code
-    qr_code_base64 = generate_qr_code(unique_url)
+        # Generate and encode QR code
+        qr_code_base64 = generate_qr_code(unique_url)
 
-    # Store the user profile data in Firestore
-    store_user_profile(user_id, data, qr_code_base64)
+        # Store the user profile data in Firestore
+        store_user_profile(user_id, data, qr_code_base64)
 
-    # Store the medical profile data
-    store_medical_profile(profile_id, user_id, data)
+        # Store the medical profile data
+        store_medical_profile(profile_id, user_id, data)
 
-    logging.info(f"New user created successfully with user_id: {user_id}")
+        logging.info(f"New user created successfully with user_id: {user_id}")
 
-    return jsonify({
-        "message": "New user created successfully", 
-        "user_id": user_id, 
-        "unique_url": unique_url, 
-        "qr_code_base64": qr_code_base64
-        }), 201
+        return jsonify({
+            "message": "New user created successfully", 
+            "user_id": user_id, 
+            "unique_url": unique_url, 
+            "qr_code_base64": qr_code_base64
+            }), 201
+    except Exception as e:
+        logging.error(f"Error creating new user profile: {e}", exc_info=True)
+        return jsonify({"error": "Internal server error"}), 500
 
 # Route to get user data and associated medical data:used by new and existing users
 @bp.get("/user/<user_id>")
@@ -69,7 +73,7 @@ def get_user_profile(user_id):
         return jsonify({"error": "Internal server error"}), 500
 
 
-# Route to update user or medical profile for existing users
+# Route to update user or medical profile for existing users: Didnt complete this feature-future goal
 @bp.patch("/user/<user_id>/update")
 def update_user_or_medical_profile(user_id):
     try:
@@ -103,37 +107,3 @@ def update_user_or_medical_profile(user_id):
         logging.error(f"Error updating user or medical profile: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-# @bp.post("/new_user")
-# def create_a_new_profile():
-#     try:
-#         data = request.get_json()
-#         logging.info(f"Received data for new user: {data}")
-
-#         valid_roles = ['new_user', 'returning_user', 'medical_professional']
-#         required_steps = ['firstName', 'lastName', 'dateOfBirth']
-
-#         is_valid, message = validate_profile_completeness(data, valid_roles, required_steps)
-
-#         if not is_valid:
-#             return jsonify({"error": message}), 400
-
-#         # Generate a unique UUID
-#         user_id = generate_uuid()
-#         profile_id = generate_uuid()
-
-#         # Generate a unique URL using the UUID
-#         unique_url = f"https://scan2save.com/user/{user_id}"
-
-#         # Generate and encode QR code
-#         qr_code_base64 = generate_qr_code(unique_url)
-
-#         # Store the user profile data in Firestore
-#         store_user_profile(user_id, data, qr_code_base64)
-
-#         # Store the medical profile data
-#         store_medical_profile(profile_id, user_id, data)
-
-#         return jsonify({"message": "User profile created successfully"}), 201
-#     except Exception as e:
-#         logging.error(f"Error creating new user profile: {e}", exc_info=True)
-#         return jsonify({"error": "Internal server error"}), 500

@@ -5,6 +5,7 @@ import qrcode
 import base64
 from io import BytesIO
 from flask import request
+import logging
 
 # Validate profile being complete
 def validate_profile_completeness(data, valid_roles, required_steps):
@@ -18,28 +19,8 @@ def validate_profile_completeness(data, valid_roles, required_steps):
         if role not in valid_roles:
             return False, f"Invalid role: {role}. Valid roles are: {', '.join(valid_roles)}"
 
-        #  # Check if all required steps are completed
-        # for step in required_steps:
-        #     if step not in data.get('completed_steps', []):
-        #         return False, f"Missing required step: {step}"
-
-        # return True, "Profile is complete"
-        # completed_steps = data.get('completed_steps')
-        # if not completed_steps or not all(step in completed_steps for step in required_steps):
-        #     return False, f"Incomplete steps. The following steps are required: {', '.join(required_steps)}"
-    
-        # Check for duplicates in Firestore
-        db = firestore.client()
-        users_ref = db.collection('users')
-        query = users_ref.where('first_name', '==', data['first_name']) \
-                        .where('last_name', '==', data['last_name']) \
-                        .where('date_of_birth', '==', data['date_of_birth'])
-        duplicates = query.stream()
-
-        if any(duplicates):
-            return False, "A profile with the same first name, last name, and date of birth already exists."
-
     return True, None
+
 
 # Generate a unique UUID
 def generate_uuid():
@@ -53,10 +34,10 @@ def store_user_profile(user_id, data, qr_code_base64):
         'user_id': user_id,
         'first_name': data['first_name'],
         'last_name': data['last_name'],
-        'date_of_birth': data['date_of_birth'],
+        'date_of_birth': data.get('date_of_birth',''),
         'gender': data.get('gender', ''),
         'phoneNumber': data.get('phoneNumber', ''),
-        'role': data['role'],
+        'role': data.get('role','new_user'),
         'emergency_contact': {
             'first_name': data.get('emergency_contact', {}).get('first_name', ''),
             'last_name': data.get('emergency_contact', {}).get('last_name', ''),
@@ -135,9 +116,9 @@ def retrieve_user_data(user_id):
         medical_profiles_docs = medical_profile_ref.stream()
         medical_profiles = [doc.to_dict() for doc in medical_profiles_docs]
         return user_data, medical_profiles
-    
 
-# Helper function to update user profile
+    
+# Helper function to update user profile: Didnt use these two functions
 def update_user_profile(user_id, updated_fields):
     if not updated_fields:
         logging.info("No user updates to apply.")

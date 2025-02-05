@@ -47,7 +47,7 @@ def create_app(test_config=None):
     # Initialize Firestore
     app.firestore_db = firestore.client()
 
-    # Register routes
+    # Register the blueprint
     app.register_blueprint(routes_bp)
 
     return app
