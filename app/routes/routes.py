@@ -107,3 +107,7 @@ def update_user_or_medical_profile(user_id):
         logging.error(f"Error updating user or medical profile: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+# TEST GET request
+@bp.get("/test")
+def test():
+    return jsonify({"message": "Test successful"}), 200
