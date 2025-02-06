@@ -11,7 +11,7 @@
 from flask import Flask
 import os
 from flask_cors import CORS
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
 from .routes.routes import bp as routes_bp
@@ -34,7 +34,7 @@ SECRET_KEY = "my-very-secure-and-random-secret-key-12345"
 
 
 # Load environment variables from the .env file
-load_dotenv()
+# load_dotenv()
 
 # Get the Firebase private key path from environment variables
 firebase_private_key_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
