@@ -42,7 +42,7 @@ def create_app(test_config=None):
         raise ValueError("Firebase credentials path not set in environment variables.")
 
     # Path to your Firebase Admin SDK private key
-    cred = credentials.Certificate(firebase_private_key_path)
+    cred = credentials.ApplicationDefault()  
     firebase_admin.initialize_app(cred)
 
     # Initialize Firestore
