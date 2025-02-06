@@ -24,9 +24,8 @@ load_dotenv()
 firebase_private_key_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 secret_key = os.getenv('SECRET_KEY')
 
-#Debug
-print(f"Firebase private key path: {firebase_private_key_path}")
-print(f"Secret key: {secret_key}")
+
+
 
 
 def create_app(test_config=None):
@@ -42,7 +41,7 @@ def create_app(test_config=None):
         raise ValueError("Firebase credentials path not set in environment variables.")
 
     # Path to your Firebase Admin SDK private key
-    cred = credentials.ApplicationDefault()  
+    cred = credentials.Certificate(firebase_private_key_path)  
     firebase_admin.initialize_app(cred)
 
     # Initialize Firestore
