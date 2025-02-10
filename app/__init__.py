@@ -24,14 +24,6 @@ load_dotenv()
 firebase_private_key_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 secret_key = os.getenv('SECRET_KEY')
 
-print("this statement is before the private key!!!")
-print(secret_key)
-print(firebase_private_key_path)
-# Read and print the contents of the Firebase credentials file
-if firebase_private_key_path and os.path.exists(firebase_private_key_path):
-    with open(firebase_private_key_path, 'r') as f:
-        print(f"Contents of the Firebase credentials file:\n{f.read()}")
-print("this statement is after the private key!!!")
 # Create the Flask app
 def create_app(test_config=None):
     app = Flask(__name__)
